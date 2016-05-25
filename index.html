@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en" ng-app="ToDo">
+
+<head>
+	<meta charset="UTF-8">
+	<title>todo</title>
+	<style>
+		body {
+			background-image: url('http://static1.squarespace.com/static/556634d8e4b02498922029bd/t/5571eb89e4b077f61c750010/1441358697294/mzx2uowz-o0-luis-llerena.jpg?format=1500w');
+		}
+
+		#main {
+			width: 50%;
+			display: block;
+			margin: auto;
+			margin-top: 25px;
+			height: auto;
+  			min-height: 100% !important;
+			background-color: #e5d1a1;
+			padding: 20px;
+			border-radius: 25px;
+		}
+
+		h1 {
+			text-align: center;
+			font-size: 3em;
+		}
+
+		#listTable {
+			margin: auto;
+			margin-bottom: 50px;
+		}
+
+		.checked {
+			text-decoration: line-through;
+			color: #ccc;
+		}
+
+		table, th , td, #listTable {
+		    border: 1px solid gray;
+		    border-collapse: collapse;
+		    padding: 5px;
+		}
+
+		th {
+			cursor: pointer;
+		}
+
+		#checkColumn {
+			width: 20px;
+		}
+
+		#taskColumn {
+			width: 350px;
+		}
+
+		#importanceColumn {
+			width: 100px;
+		}
+
+		table tr:nth-child(odd) {
+		    background-color: #f1f1f1;
+		}
+		table tr:nth-child(even) {
+		    background-color: #ffffff;
+		}
+
+		#userForm {
+			margin-bottom: 10px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="main" ng-controller="todoController">
+		<h1>Soichi's To Do List</h1>
+		<form id="userForm" ng-submit="addTodo()">
+			<input type="text" name="userInput" ng-model="newTask" placeholder="What needs to be done?" required>
+
+			<select ng-model="selectedImportance" ng-options="x.level for x in importance" required>
+				<option value="">-- choose importance --</option>
+			</select>
+
+			<button ng-disabled="userInput.$invalid">Add</button>
+		</form>
+
+		<button ng-click="clearChecked()">Clear Checked</button>
+		<button ng-click="reset()">Reset</button>
+		<p>Total Tasks: {{todos.length}}</p>
+		<p>Checked Tasks: {{ (todos|filter:{checked: true}).length }}</p>
+		<p>*Click on the headers of the table to customize the order of your list</p>
+
+		<table id="listTable">
+			<tr>
+				<th id="checkColumn" ng-click="checkAll()">&#9989;</th>
+			    <th id="taskColumn" ng-click="selectedOrdering('task')">Task</th>
+			    <th id="importanceColumn" ng-click="selectedOrdering('importance.level')">Importance</th>
+			</tr>
+
+		    <tr ng-repeat="x in todos | orderBy:usersOrder">
+		    	<td><input type="checkbox" ng-model="x.checked" /></td>
+		        <td ng-class="crossLine(x.checked)">{{ x.task }}</td>
+		        <td ng-class="crossLine(x.checked)" ng-style="setColor(x.importance.color, x.checked)">{{ x.importance.level }}</td>
+		    </tr>
+		</table>
+	</div>
+
+
+
+<script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js"></script>
+
+<script>
+var app = angular.module('ToDo',[]);
+app.controller('todoController', ['$scope', function($scope) {
+	$scope.todos = [];
+	$scope.importance = [
+        {level: "Very important", color: "red"},
+        {level: "Neutral", color: "orange"},
+        {level: "Less important", color: "pink"}
+    ];
+    $scope.allChecked = false;
+	
+	$scope.addTodo = function() {
+		$scope.todos.push({'task': $scope.newTask, 'checked': false, 'importance': $scope.selectedImportance});
+		$scope.newTask = '';
+	}
+	$scope.clearChecked = function() {
+		$scope.todos = $scope.todos.filter(function(item){
+			return !item.checked;
+		})
+	}
+	$scope.reset = function() {
+		$scope.todos = [];
+    }
+    $scope.selectedOrdering = function(x) {
+    	if ($scope.usersOrder == x) {
+    		$scope.usersOrder = '-' + x;
+    	} else {
+    		$scope.usersOrder = x;
+    	}
+	}
+	$scope.setColor = function(value, checked){
+		if (checked) {
+			return {"color": "#ccc" };
+		} else {
+			return {"color": value };
+		}
+    }
+    $scope.crossLine = function(checked) {
+    	if (checked) {
+    		return "checked";
+    	}
+    }
+    $scope.checkAll = function() {
+    	if ($scope.allChecked) {
+    		angular.forEach($scope.todos, function(value, index) {
+    			value.checked = false;
+    		})
+    	} else {
+    		angular.forEach($scope.todos, function(value, index) {
+    			value.checked = true;
+    		})
+    	}
+    	$scope.allChecked = !$scope.allChecked;
+    }
+}]);
+
+</script>
+</body>
+</html>
